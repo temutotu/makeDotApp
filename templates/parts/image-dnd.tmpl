@@ -1,0 +1,80 @@
+{{ define "parts/image-dnd" }}
+<form id="make-dot-form" method="post" action="/makeDot" enctype="multipart/form-data">
+  <label for="images">画像添付</label>
+  <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="画像をドラッグアンドドロップ">
+    <p class="dropzone-title">ここに画像をドラッグ&ドロップ</p>
+    <p class="dropzone-sub">またはクリックして画像を選択</p>
+    <input id="images" name="images" type="file" accept="image/*" multiple>
+  </div>
+  <input id="dotSizeHidden" name="dotSize" type="hidden" value="">
+  <ul class="file-list" id="file-list" aria-live="polite"></ul>
+  <button type="submit">送信</button>
+</form>
+
+<script>
+  (function () {
+    const form = document.getElementById("make-dot-form");
+    const dropzone = document.getElementById("dropzone");
+    const input = document.getElementById("images");
+    const fileList = document.getElementById("file-list");
+    const dotSizeHidden = document.getElementById("dotSizeHidden");
+
+    function renderFiles(files) {
+      fileList.innerHTML = "";
+      if (!files || files.length === 0) {
+        return;
+      }
+
+      Array.from(files).forEach((file) => {
+        const item = document.createElement("li");
+        item.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+        fileList.appendChild(item);
+      });
+    }
+
+    function assignFiles(files) {
+      const dt = new DataTransfer();
+      Array.from(files)
+        .filter((file) => file.type.startsWith("image/"))
+        .forEach((file) => dt.items.add(file));
+      input.files = dt.files;
+      renderFiles(input.files);
+    }
+
+    dropzone.addEventListener("click", () => input.click());
+    dropzone.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        input.click();
+      }
+    });
+
+    ["dragenter", "dragover"].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.add("is-dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.remove("is-dragover");
+      });
+    });
+
+    dropzone.addEventListener("drop", (event) => {
+      assignFiles(event.dataTransfer.files);
+    });
+
+    input.addEventListener("change", () => {
+      renderFiles(input.files);
+    });
+
+    form.addEventListener("submit", () => {
+      const dotSize = document.getElementById("dotSize");
+      dotSizeHidden.value = dotSize ? dotSize.value : "";
+    });
+  })();
+</script>
+{{ end }}

@@ -1,0 +1,174 @@
+{{ define "parts/output-image" }}
+<section class="output-image-wrap" aria-label="出力画像">
+  <div class="output-image-header">
+    <p class="output-image-title">出力画像プレビュー</p>
+    <div id="output-zoom-controls" class="output-zoom-controls" aria-label="プレビュー拡大縮小">
+      <button id="zoom-out" class="output-zoom-button" type="button" aria-label="縮小">-</button>
+      <input id="zoom-range" class="output-zoom-range" type="range" min="50" max="500" step="25" value="100" aria-label="ズーム倍率">
+      <button id="zoom-in" class="output-zoom-button" type="button" aria-label="拡大">+</button>
+      <span id="zoom-value" class="output-zoom-value">100%</span>
+    </div>
+  </div>
+  <div id="output-viewport" class="output-viewport">
+    <canvas id="output-canvas" class="output-canvas" aria-label="pixel map preview"></canvas>
+  </div>
+  <p id="output-empty">まだ画像はありません</p>
+</section>
+
+<script>
+  (function () {
+    const pixelMap = {{ .PixelMapJSON }};
+    const colorCode = {{ .ColorCodeJSON }};
+    const canvas = document.getElementById("output-canvas");
+    const viewport = document.getElementById("output-viewport");
+    const empty = document.getElementById("output-empty");
+    const zoomControls = document.getElementById("output-zoom-controls");
+    const zoomRange = document.getElementById("zoom-range");
+    const zoomValue = document.getElementById("zoom-value");
+    const zoomIn = document.getElementById("zoom-in");
+    const zoomOut = document.getElementById("zoom-out");
+
+    if (!canvas || !Array.isArray(pixelMap) || pixelMap.length === 0) {
+      if (canvas) {
+        canvas.style.display = "none";
+      }
+      if (viewport) {
+        viewport.style.display = "none";
+      }
+      if (zoomControls) {
+        zoomControls.style.display = "none";
+      }
+      return;
+    }
+
+    const height = pixelMap.length;
+    const width = Array.isArray(pixelMap[0]) ? pixelMap[0].length : 0;
+    if (width === 0) {
+      canvas.style.display = "none";
+      if (viewport) {
+        viewport.style.display = "none";
+      }
+      if (zoomControls) {
+        zoomControls.style.display = "none";
+      }
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      canvas.style.display = "none";
+      if (viewport) {
+        viewport.style.display = "none";
+      }
+      if (zoomControls) {
+        zoomControls.style.display = "none";
+      }
+      return;
+    }
+
+    const maxPreviewSize = 720;
+    const minZoom = 50;
+    const maxZoom = 500;
+    const zoomStep = 25;
+    const baseCellSize = Math.max(6, Math.floor(Math.min(maxPreviewSize / width, maxPreviewSize / height)));
+
+    function contrastColor(hex) {
+      const h = hex.replace("#", "");
+      const r = parseInt(h.substring(0, 2), 16);
+      const g = parseInt(h.substring(2, 4), 16);
+      const b = parseInt(h.substring(4, 6), 16);
+      // Perceived luminance (ITU-R BT.601)
+      const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+      return luminance > 140 ? "#000000" : "#ffffff";
+    }
+
+    const gridColor = "rgba(0,0,0,0.25)";
+
+    function clampZoom(value) {
+      return Math.min(maxZoom, Math.max(minZoom, value));
+    }
+
+    function updateZoomValue(value) {
+      if (zoomValue) {
+        zoomValue.textContent = `${value}%`;
+      }
+      if (zoomRange) {
+        zoomRange.value = String(value);
+      }
+    }
+
+    function render(zoomPercent) {
+      const zoom = clampZoom(zoomPercent);
+      const cellSize = Math.max(1, Math.floor(baseCellSize * zoom / 100));
+      const borderWidth = Math.max(1, Math.floor(cellSize * 0.05));
+      const fontSize = Math.max(8, Math.floor(cellSize * 0.45));
+      const showLabel = cellSize >= 16;
+
+      canvas.width = width * cellSize;
+      canvas.height = height * cellSize;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (showLabel) {
+        ctx.font = `bold ${fontSize}px monospace`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+      }
+
+      for (let y = 0; y < height; y += 1) {
+        for (let x = 0; x < width; x += 1) {
+          const colorIndex = pixelMap[y][x];
+          const code = colorCode[colorIndex] || "FF00FF";
+          const cssColor = code.startsWith("#") ? code : `#${code}`;
+          const cx = x * cellSize;
+          const cy = y * cellSize;
+
+          ctx.fillStyle = cssColor;
+          ctx.fillRect(cx, cy, cellSize, cellSize);
+
+          ctx.strokeStyle = gridColor;
+          ctx.lineWidth = borderWidth;
+          ctx.strokeRect(cx + borderWidth / 2, cy + borderWidth / 2, cellSize - borderWidth, cellSize - borderWidth);
+
+          if (showLabel) {
+            ctx.fillStyle = contrastColor(cssColor);
+            ctx.fillText(
+              String(colorIndex),
+              cx + cellSize / 2,
+              cy + cellSize / 2
+            );
+          }
+        }
+      }
+
+      updateZoomValue(zoom);
+    }
+
+    render(100);
+
+    if (zoomRange) {
+      zoomRange.addEventListener("input", function (event) {
+        const value = Number(event.target.value);
+        render(value);
+      });
+    }
+
+    if (zoomIn) {
+      zoomIn.addEventListener("click", function () {
+        const current = zoomRange ? Number(zoomRange.value) : 100;
+        render(current + zoomStep);
+      });
+    }
+
+    if (zoomOut) {
+      zoomOut.addEventListener("click", function () {
+        const current = zoomRange ? Number(zoomRange.value) : 100;
+        render(current - zoomStep);
+      });
+    }
+
+    if (empty) {
+      empty.style.display = "none";
+    }
+  })();
+</script>
+{{ end }}

@@ -1,0 +1,103 @@
+{{define "parts/block-info"}}
+<section class="block-info-wrap" aria-label="使用ブロック一覧">
+	<div class="block-info-header">
+		<p class="block-info-title">使用ブロック一覧</p>
+	</div>
+	<div id="block-info-empty" class="block-info-empty">まだブロック情報はありません</div>
+	<div id="block-info-list" class="block-info-list" role="list"></div>
+</section>
+
+<script>
+	(function () {
+		const pixelMap = {{ .PixelMapJSON }};
+		const colorCode = {{ .ColorCodeJSON }};
+		const blockInfoMap = {{ .BlockInfoJSON }};
+		const list = document.getElementById("block-info-list");
+		const empty = document.getElementById("block-info-empty");
+
+		if (!list || !Array.isArray(colorCode) || colorCode.length === 0) {
+			return;
+		}
+
+		function normalizeColorCode(code) {
+			if (typeof code !== "string") {
+				return "";
+			}
+
+			return code.replace(/^#/, "").toUpperCase();
+		}
+
+		function stripQuotes(value) {
+			if (typeof value !== "string") {
+				return "";
+			}
+
+			return value.replace(/["']/g, "");
+		}
+
+		function buildColorDotCountMap(map) {
+			const countMap = new Map();
+			if (!Array.isArray(map)) {
+				return countMap;
+			}
+
+			map.forEach(function (row) {
+				if (!Array.isArray(row)) {
+					return;
+				}
+
+				row.forEach(function (colorIndex) {
+					if (!Number.isInteger(colorIndex) || colorIndex < 0) {
+						return;
+					}
+
+					const current = countMap.get(colorIndex) || 0;
+					countMap.set(colorIndex, current + 1);
+				});
+			});
+
+			return countMap;
+		}
+
+		const colorDotCountMap = buildColorDotCountMap(pixelMap);
+
+		const fragment = document.createDocumentFragment();
+
+		colorCode.forEach(function (code, index) {
+			const normalizedCode = normalizeColorCode(code);
+			const blockInfo = blockInfoMap["#" + normalizedCode] || null;
+			const item = document.createElement("div");
+			item.className = "block-info-item";
+			item.setAttribute("role", "listitem");
+
+			const indexElement = document.createElement("span");
+			indexElement.className = "block-info-index";
+			indexElement.textContent = String(index);
+
+			const swatch = document.createElement("span");
+			swatch.className = "block-info-swatch";
+			swatch.style.backgroundColor = blockInfo && blockInfo.ColorCode ? blockInfo.ColorCode : "transparent";
+
+			const meta = document.createElement("div");
+			meta.className = "block-info-meta";
+
+			const name = document.createElement("p");
+			name.className = "block-info-name";
+			const blockName = blockInfo && blockInfo.Name ? stripQuotes(blockInfo.Name) : "未登録ブロック";
+			const dotCount = String(colorDotCountMap.get(index) || 0);
+			name.textContent = blockName + " × " + dotCount;
+
+			meta.appendChild(name);
+			item.appendChild(indexElement);
+			item.appendChild(swatch);
+			item.appendChild(meta);
+			fragment.appendChild(item);
+		});
+
+		list.appendChild(fragment);
+		if (empty) {
+			empty.style.display = "none";
+		}
+	})();
+</script>
+{{end}}

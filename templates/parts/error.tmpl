@@ -1,0 +1,11 @@
+{{ define "parts/error" }}
+{{ if .Error }}
+<section class="panel error-panel">
+    <section class="error-banner" role="alert" aria-live="assertive">
+        <p class="error-banner-title">エラーが発生しました</p>
+        <p class="error-banner-message">{{ .Error.Message }}</p>
+        <p class="error-banner-code">Code: {{ .Error.Code }}</p>
+    </section>
+</section>
+{{ end }}
+{{ end }}
