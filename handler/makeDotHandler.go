@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"path/filepath"
 	"strconv"
@@ -12,7 +13,8 @@ import (
 	constants "makeDotApp/const"
 	response "makeDotApp/network/response"
 	selectinput "makeDotApp/templates/input"
-	makeDot "makedot"
+
+	makeDot "github.com/temutotu/makeDot"
 
 	"github.com/gin-gonic/gin"
 )
