@@ -28,7 +28,7 @@ jobs:
       - name: Build
         run: |
           make
-          tar -czf release.tar.gz makeDotApp .\resource .\static .\templates
+          tar -czf release.tar.gz makeDotApp resource static templates
 
       - name: Upload to S3
         run: |
