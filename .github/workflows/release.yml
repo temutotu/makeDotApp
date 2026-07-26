@@ -32,7 +32,7 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp release.tar.gz s3://${{ github.event.inputs.s3_bucket }}/makeDotApp/releases/release.tar.gz
+          aws s3 cp release.tar.gz s3://pokopia-dotmaker/releases/release.tar.gz
 
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
