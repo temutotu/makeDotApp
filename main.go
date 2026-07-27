@@ -114,6 +114,9 @@ func main() {
 
 	})
 
+	r.GET("/makeDot", func(c *gin.Context) {
+		c.Redirect(302, "/main")
+	})
 	r.POST("/makeDot", func(c *gin.Context) {
 		handler.MakeDotHandler(c)
 	})
