@@ -27,6 +27,9 @@
     const zoomValue = document.getElementById("zoom-value");
     const zoomIn = document.getElementById("zoom-in");
     const zoomOut = document.getElementById("zoom-out");
+    let currentCellSize = 1;
+    let currentZoom = 100;
+    let selectedPixel = null;
 
     if (!canvas || !Array.isArray(pixelMap) || pixelMap.length === 0) {
       if (canvas) {
@@ -107,6 +110,8 @@
       canvas.width = width * cellSize;
       canvas.height = height * cellSize;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      currentCellSize = cellSize;
+      currentZoom = zoom;
 
       if (showLabel) {
         ctx.font = `bold ${fontSize}px monospace`;
@@ -140,6 +145,21 @@
         }
       }
 
+      if (selectedPixel) {
+        const sx = selectedPixel.x * cellSize;
+        const sy = selectedPixel.y * cellSize;
+        const focusWidth = Math.max(2, Math.floor(cellSize * 0.12));
+
+        ctx.strokeStyle = "#f59e0b";
+        ctx.lineWidth = focusWidth;
+        ctx.strokeRect(
+          sx + focusWidth / 2,
+          sy + focusWidth / 2,
+          cellSize - focusWidth,
+          cellSize - focusWidth
+        );
+      }
+
       updateZoomValue(zoom);
     }
 
@@ -165,6 +185,31 @@
         render(current - zoomStep);
       });
     }
+
+    canvas.addEventListener("click", function (event) {
+      const x = Math.floor(event.offsetX / currentCellSize);
+      const y = Math.floor(event.offsetY / currentCellSize);
+
+      if (x < 0 || y < 0 || x >= width || y >= height) {
+        return;
+      }
+
+      const colorIndex = pixelMap[y][x];
+      if (!Number.isInteger(colorIndex) || colorIndex < 0) {
+        return;
+      }
+
+      selectedPixel = { x: x, y: y };
+      render(currentZoom);
+
+      window.dispatchEvent(new CustomEvent("output-pixel-selected", {
+        detail: {
+          x: x,
+          y: y,
+          colorIndex: colorIndex
+        }
+      }));
+    });
 
     if (empty) {
       empty.style.display = "none";
