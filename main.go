@@ -42,11 +42,6 @@ func main() {
 	tmpl := template.Must(template.ParseFiles(templateFiles...))
 	r.SetHTMLTemplate(tmpl)
 	r.Static("/static", "./static")
-	r.Static("/img", "./img")
-
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
-	})
 
 	r.GET("/main", func(c *gin.Context) {
 		common.StartSession(c)
