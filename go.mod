@@ -5,7 +5,7 @@ go 1.25.6
 require (
 	github.com/gin-contrib/sessions v1.1.0
 	github.com/gin-gonic/gin v1.12.0
-	github.com/temutotu/makeDot v0.1.2-0.20260728152319-138c4b4133d1
+	github.com/temutotu/makeDot v0.1.2
 	golang.org/x/time v0.15.0
 )
 
