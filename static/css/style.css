@@ -222,6 +222,13 @@ button:hover {
   line-height: 1;
 }
 
+#show-labels-toggle {
+  width: auto;
+  min-width: 90px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
 .output-zoom-range {
   width: 140px;
   padding: 0;
