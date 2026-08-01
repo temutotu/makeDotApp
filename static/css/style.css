@@ -11,7 +11,7 @@ body {
 }
 
 .layout {
-  width: min(100% - 20px, 1360px, calc((100svh - 48px) * 1.7));
+  width: min(100%, 1360px, calc((100svh - 48px) * 1.7));
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -356,17 +356,19 @@ button:hover {
   }
 
   .layout {
-    width: min(100% - 24px, 100%);
+    width: min(100%, 1360px);
   }
 
   .content-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
   }
 
   .block-info-panel,
   .preview-panel {
     min-height: auto;
     height: auto;
+    min-width: 0;
   }
 
   .output-canvas {
@@ -388,6 +390,7 @@ button:hover {
   }
 
   .block-info-list {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     max-height: none;
     overflow-y: visible;
     padding-right: 0;
