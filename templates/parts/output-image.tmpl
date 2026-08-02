@@ -3,6 +3,7 @@
   <div class="output-image-header">
     <p class="output-image-title">出力画像プレビュー</p>
     <div id="output-zoom-controls" class="output-zoom-controls" aria-label="プレビュー拡大縮小">
+      <button id="show-labels-toggle" class="output-zoom-button" type="button" aria-label="ピクセル番号表示切替">番号非表示</button>
       <button id="zoom-out" class="output-zoom-button" type="button" aria-label="縮小">-</button>
       <input id="zoom-range" class="output-zoom-range" type="range" min="50" max="500" step="25" value="100" aria-label="ズーム倍率">
       <button id="zoom-in" class="output-zoom-button" type="button" aria-label="拡大">+</button>
@@ -27,6 +28,11 @@
     const zoomValue = document.getElementById("zoom-value");
     const zoomIn = document.getElementById("zoom-in");
     const zoomOut = document.getElementById("zoom-out");
+    const showLabelsToggle = document.getElementById("show-labels-toggle");
+    let currentCellSize = 1;
+    let currentZoom = 100;
+    let selectedPixel = null;
+    let showLabels = true;
 
     if (!canvas || !Array.isArray(pixelMap) || pixelMap.length === 0) {
       if (canvas) {
@@ -102,11 +108,13 @@
       const cellSize = Math.max(1, Math.floor(baseCellSize * zoom / 100));
       const borderWidth = Math.max(1, Math.floor(cellSize * 0.05));
       const fontSize = Math.max(8, Math.floor(cellSize * 0.45));
-      const showLabel = cellSize >= 16;
+      const showLabel = showLabels && cellSize >= 16;
 
       canvas.width = width * cellSize;
       canvas.height = height * cellSize;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      currentCellSize = cellSize;
+      currentZoom = zoom;
 
       if (showLabel) {
         ctx.font = `bold ${fontSize}px monospace`;
@@ -140,10 +148,41 @@
         }
       }
 
+      if (selectedPixel) {
+        const sx = selectedPixel.x * cellSize;
+        const sy = selectedPixel.y * cellSize;
+        const focusWidth = Math.max(2, Math.floor(cellSize * 0.12));
+
+        ctx.strokeStyle = "#f59e0b";
+        ctx.lineWidth = focusWidth;
+        ctx.strokeRect(
+          sx + focusWidth / 2,
+          sy + focusWidth / 2,
+          cellSize - focusWidth,
+          cellSize - focusWidth
+        );
+      }
+
       updateZoomValue(zoom);
     }
 
-    render(100);
+    function updateToggleButton() {
+      if (showLabelsToggle) {
+        showLabelsToggle.textContent = showLabels ? "番号表示" : "番号非表示";
+        showLabelsToggle.setAttribute("aria-pressed", String(showLabels));
+      }
+    }
+
+    render(125);
+    updateToggleButton();
+
+    if (showLabelsToggle) {
+      showLabelsToggle.addEventListener("click", function () {
+        showLabels = !showLabels;
+        updateToggleButton();
+        render(currentZoom);
+      });
+    }
 
     if (zoomRange) {
       zoomRange.addEventListener("input", function (event) {
@@ -165,6 +204,31 @@
         render(current - zoomStep);
       });
     }
+
+    canvas.addEventListener("click", function (event) {
+      const x = Math.floor(event.offsetX / currentCellSize);
+      const y = Math.floor(event.offsetY / currentCellSize);
+
+      if (x < 0 || y < 0 || x >= width || y >= height) {
+        return;
+      }
+
+      const colorIndex = pixelMap[y][x];
+      if (!Number.isInteger(colorIndex) || colorIndex < 0) {
+        return;
+      }
+
+      selectedPixel = { x: x, y: y };
+      render(currentZoom);
+
+      window.dispatchEvent(new CustomEvent("output-pixel-selected", {
+        detail: {
+          x: x,
+          y: y,
+          colorIndex: colorIndex
+        }
+      }));
+    });
 
     if (empty) {
       empty.style.display = "none";

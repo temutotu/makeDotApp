@@ -2,7 +2,12 @@ module makeDotApp
 
 go 1.25.6
 
-require github.com/gin-gonic/gin v1.12.0
+require (
+	github.com/gin-contrib/sessions v1.1.0
+	github.com/gin-gonic/gin v1.12.0
+	github.com/temutotu/makeDot v0.1.2
+	golang.org/x/time v0.15.0
+)
 
 require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
@@ -10,7 +15,6 @@ require (
 	github.com/bytedance/sonic/loader v0.5.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.12 // indirect
-	github.com/gin-contrib/sessions v1.1.0 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -31,7 +35,6 @@ require (
 	github.com/quasoft/memstore v0.0.0-20191010062613-2bce066d2b0b // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
-	github.com/temutotu/makeDot v0.1.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.5.0 // indirect

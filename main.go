@@ -2,18 +2,22 @@ package main
 
 import (
 	"html/template"
+	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"makeDotApp/common"
 	constants "makeDotApp/const"
 	handler "makeDotApp/handler"
+	"makeDotApp/middleware"
 	response "makeDotApp/network/response"
 	selectinput "makeDotApp/templates/input"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/time/rate"
 )
 
 type mainPageData struct {
@@ -29,6 +33,8 @@ type mainPageData struct {
 
 func main() {
 	r := gin.Default()
+	r.MaxMultipartMemory = 8 << 20 // 8MB
+	r.Use(middleware.NewGlobalRateLimitMiddleware(rate.Limit(30), 60))
 	partFiles, err := filepath.Glob("templates/parts/*.tmpl")
 	if err != nil {
 		panic(err)
@@ -42,11 +48,6 @@ func main() {
 	tmpl := template.Must(template.ParseFiles(templateFiles...))
 	r.SetHTMLTemplate(tmpl)
 	r.Static("/static", "./static")
-	r.Static("/img", "./img")
-
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
-	})
 
 	r.GET("/main", func(c *gin.Context) {
 		common.StartSession(c)
@@ -114,9 +115,29 @@ func main() {
 
 	})
 
-	r.POST("/makeDot", func(c *gin.Context) {
+	r.GET("/makeDot", func(c *gin.Context) {
+		c.Redirect(302, "/main")
+	})
+
+	makeDotProtected := r.Group("/makeDot")
+	makeDotProtected.Use(
+		middleware.NewConcurrencyLimitMiddleware(8),
+		middleware.NewMaxBodyBytesMiddleware(10<<20), // 10MB
+	)
+	makeDotProtected.POST("", func(c *gin.Context) {
 		handler.MakeDotHandler(c)
 	})
 
-	r.Run(":80") // http://localhost:80
+	srv := &http.Server{
+		Addr:              ":80",
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		panic(err)
+	}
 }
