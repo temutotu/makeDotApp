@@ -33,6 +33,7 @@ type mainPageData struct {
 
 func main() {
 	r := gin.Default()
+	r.Use(middleware.NewLangMiddleware())
 	r.MaxMultipartMemory = 8 << 20 // 8MB
 	r.Use(middleware.NewGlobalRateLimitMiddleware(rate.Limit(30), 60))
 	partFiles, err := filepath.Glob("templates/parts/*.tmpl")
