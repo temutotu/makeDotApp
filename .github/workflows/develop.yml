@@ -1,0 +1,40 @@
+name: Release-dev Upload to S3
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'リリースバージョン'
+        required: true
+        default: 'develop'
+      s3_bucket:
+        description: 'アップロード先のS3バケット名'
+        required: true
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build
+        run: |
+          make
+          tar -czf release.tar.gz makeDotApp resource static templates
+
+      - name: Upload to S3
+        run: |
+          aws s3 cp release.tar.gz s3://pokopia-dotmaker/develop/release.tar.gz
+
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-northeast-1
