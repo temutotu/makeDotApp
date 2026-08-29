@@ -10,7 +10,9 @@ import (
 	"strconv"
 
 	"makeDotApp/common"
+	"makeDotApp/common/lang"
 	constants "makeDotApp/const"
+	messageKey "makeDotApp/const/lang/messageKey"
 	response "makeDotApp/network/response"
 	selectinput "makeDotApp/templates/input"
 
@@ -20,6 +22,8 @@ import (
 )
 
 func MakeDotHandler(c *gin.Context) {
+	langManager := lang.GetLangManagerFromContext(c)
+
 	dotSizeStr := c.PostForm("dotSize")
 	dotSize, err := strconv.Atoi(dotSizeStr)
 	if err != nil {
@@ -43,20 +47,20 @@ func MakeDotHandler(c *gin.Context) {
 
 	form, err := c.MultipartForm()
 	if err != nil {
-		c.HTML(400, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 400, "Failed to parse multipart form"))
+		c.HTML(400, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 400, langManager.GetErrorMessage(messageKey.ERROR_FAILED_TO_PARSE_MULTIPART_FORM)))
 		return
 	}
 
 	files := form.File["images"]
 	if len(files) == 0 {
-		c.HTML(400, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 400, "No image files provided"))
+		c.HTML(400, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 400, langManager.GetErrorMessage(messageKey.ERROR_NO_IMAGE_FILES_PROVIDED)))
 		return
 	}
 
 	file := files[0]
 	src, err := file.Open()
 	if err != nil {
-		c.HTML(500, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 500, "Failed to open image file"))
+		c.HTML(500, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 500, langManager.GetErrorMessage(messageKey.ERROR_FAILED_TO_OPEN_IMAGE_FILE)))
 		return
 	}
 	defer src.Close()
@@ -65,12 +69,12 @@ func MakeDotHandler(c *gin.Context) {
 	srcImg, format, err := image.Decode(src)
 	if err != nil {
 		fmt.Println("Error decoding image:", err)
-		c.HTML(400, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 400, "Failed to decode image"))
+		c.HTML(400, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 400, langManager.GetErrorMessage(messageKey.ERROR_FAILED_TO_DECODE_IMAGE)))
 		return
 	}
 
 	if format != "jpeg" && format != "png" {
-		c.HTML(400, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 400, "Unsupported image format"))
+		c.HTML(400, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 400, langManager.GetErrorMessage(messageKey.ERROR_UNSUPPORTED_IMAGE_FORMAT)))
 		return
 	}
 
@@ -85,7 +89,7 @@ func MakeDotHandler(c *gin.Context) {
 
 	pixelMap, colorCode, err := makeDot.MakeDotMap(srcImg, dstImg, conf)
 	if err != nil {
-		c.HTML(500, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 500, "Failed to make dot image"))
+		c.HTML(500, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 500, langManager.GetErrorMessage(messageKey.ERROR_MAKE_DOT_FAILED)))
 		return
 	}
 
@@ -101,7 +105,7 @@ func MakeDotHandler(c *gin.Context) {
 
 	blockInfoMap := common.GetBlockInfo(conf.BlockInfoPath, &colorCodeValue)
 	if blockInfoMap == nil {
-		c.HTML(500, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 500, "Failed to get block info"))
+		c.HTML(500, "main.tmpl", response.BuildMakeDotIndexErrorResponse(dotSizeSelect, 500, langManager.GetErrorMessage(messageKey.ERROR_FAILED_TO_GET_BLOCK_INFO)))
 		return
 	}
 
