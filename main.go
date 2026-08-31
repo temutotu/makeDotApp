@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"makeDotApp/common"
@@ -28,6 +29,7 @@ type mainPageData struct {
 	ColorCodeJSON template.JS
 	BlockInfoMap  *map[string]common.BlockInfo
 	BlockInfoJSON template.JS
+	OGPImageURL   string
 	Error         *response.Error
 }
 
@@ -49,6 +51,7 @@ func main() {
 	tmpl := template.Must(template.ParseFiles(templateFiles...))
 	r.SetHTMLTemplate(tmpl)
 	r.Static("/static", "./static")
+	r.GET("/ogp-thumbnail", handler.OGPThumbnailHandler)
 
 	r.GET("/main", func(c *gin.Context) {
 		common.StartSession(c)
@@ -111,6 +114,7 @@ func main() {
 			ColorCodeJSON: common.ToJSONJS(colorCode),
 			BlockInfoMap:  blockInfoMap,
 			BlockInfoJSON: blockInfoMapJSON,
+			OGPImageURL:   ogpThumbnailURL(c),
 			Error:         nil,
 		})
 
@@ -141,4 +145,9 @@ func main() {
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
+}
+
+func ogpThumbnailURL(c *gin.Context) string {
+	host := strings.TrimSpace(c.Request.Host)
+	return "http://" + host + "/ogp-thumbnail"
 }

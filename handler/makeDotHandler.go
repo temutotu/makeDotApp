@@ -6,8 +6,11 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
+	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"makeDotApp/common"
 	"makeDotApp/common/lang"
@@ -122,7 +125,28 @@ func MakeDotHandler(c *gin.Context) {
 		ColorCodeJSON: common.ToJSONJS(colorCodeValue),
 		BlockInfoMap:  blockInfoMap,
 		BlockInfoJSON: common.ToJSONJS(blockInfoMap),
+		OGPImageURL:   ogpThumbnailURL(c),
 	})
+}
+
+func OGPThumbnailHandler(c *gin.Context) {
+	outputPath := filepath.Join("resource", "thumbnail", "thumbnail.png")
+	if _, err := os.Stat(outputPath); err != nil {
+		if os.IsNotExist(err) {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Header("Cache-Control", "no-store")
+	c.File(outputPath)
+}
+
+func ogpThumbnailURL(c *gin.Context) string {
+	host := strings.TrimSpace(c.Request.Host)
+	return "http://" + host + "/ogp-thumbnail"
 }
 
 func buildDotSizeOptions() []selectinput.SelectOption {
