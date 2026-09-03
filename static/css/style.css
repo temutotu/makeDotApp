@@ -74,6 +74,31 @@ body {
   height: min(84svh, 980px);
 }
 
+@media (max-width: 720px) {
+  body {
+    padding: 12px 10px;
+  }
+
+  .layout {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .panel {
+    padding: 16px;
+  }
+
+  .content-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .block-info-panel,
+  .preview-panel {
+    height: min(70svh, 700px);
+  }
+}
+
 h1 {
   margin: 0 0 16px;
   font-size: 24px;
