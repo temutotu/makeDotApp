@@ -146,7 +146,12 @@ func OGPThumbnailHandler(c *gin.Context) {
 
 func ogpThumbnailURL(c *gin.Context) string {
 	host := strings.TrimSpace(c.Request.Host)
-	return "http://" + host + "/ogp-thumbnail"
+	scheme := "http"
+	if c.Request.TLS != nil || strings.EqualFold(strings.TrimSpace(strings.Split(c.GetHeader("X-Forwarded-Proto"), ",")[0]), "https") {
+		scheme = "https"
+	}
+
+	return scheme + "://" + host + "/ogp-thumbnail"
 }
 
 func buildDotSizeOptions() []selectinput.SelectOption {
