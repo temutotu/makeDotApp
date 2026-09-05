@@ -1,17 +1,20 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
-  min-height: 100svh;
+  min-height: 100vh;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding: 24px 0;
   background: #f5f7fb;
   color: #1f2937;
+  -webkit-text-size-adjust: 100%;
 }
 
 .layout {
-  width: min(100%, 1360px, calc((100svh - 48px) * 1.7));
+  width: 100%;
+  max-width: 1360px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -55,6 +58,7 @@ body {
 #make-dot-form {
   width: 100%;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .content-grid {
@@ -71,7 +75,18 @@ body {
 .block-info-panel,
 .preview-panel {
   display: flex;
-  height: min(84svh, 980px);
+  height: min(84vh, 980px);
+}
+
+@supports (height: 100svh) {
+  body {
+    min-height: 100svh;
+  }
+
+  .block-info-panel,
+  .preview-panel {
+    height: min(84svh, 980px);
+  }
 }
 
 @media (max-width: 720px) {
@@ -95,7 +110,16 @@ body {
 
   .block-info-panel,
   .preview-panel {
-    height: min(70svh, 700px);
+    height: min(70vh, 700px);
+  }
+}
+
+@supports (height: 100svh) {
+  @media (max-width: 720px) {
+    .block-info-panel,
+    .preview-panel {
+      height: min(70svh, 700px);
+    }
   }
 }
 
