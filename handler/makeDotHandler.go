@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"makeDotApp/common"
 	"makeDotApp/common/lang"
@@ -125,7 +124,7 @@ func MakeDotHandler(c *gin.Context) {
 		ColorCodeJSON: common.ToJSONJS(colorCodeValue),
 		BlockInfoMap:  blockInfoMap,
 		BlockInfoJSON: common.ToJSONJS(blockInfoMap),
-		OGPImageURL:   ogpThumbnailURL(c),
+		OGPImageURL:   common.OGPThumbnailURL(c),
 	})
 }
 
@@ -142,16 +141,6 @@ func OGPThumbnailHandler(c *gin.Context) {
 
 	c.Header("Cache-Control", "no-store")
 	c.File(outputPath)
-}
-
-func ogpThumbnailURL(c *gin.Context) string {
-	host := strings.TrimSpace(c.Request.Host)
-	scheme := "http"
-	if c.Request.TLS != nil || strings.EqualFold(strings.TrimSpace(strings.Split(c.GetHeader("X-Forwarded-Proto"), ",")[0]), "https") {
-		scheme = "https"
-	}
-
-	return scheme + "://" + host + "/ogp-thumbnail"
 }
 
 func buildDotSizeOptions() []selectinput.SelectOption {

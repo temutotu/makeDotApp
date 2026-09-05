@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"makeDotApp/common"
@@ -114,7 +113,7 @@ func main() {
 			ColorCodeJSON: common.ToJSONJS(colorCode),
 			BlockInfoMap:  blockInfoMap,
 			BlockInfoJSON: blockInfoMapJSON,
-			OGPImageURL:   ogpThumbnailURL(c),
+			OGPImageURL:   common.OGPThumbnailURL(c),
 			Error:         nil,
 		})
 
@@ -145,14 +144,4 @@ func main() {
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
-}
-
-func ogpThumbnailURL(c *gin.Context) string {
-	host := strings.TrimSpace(c.Request.Host)
-	scheme := "http"
-	if c.Request.TLS != nil || strings.EqualFold(strings.TrimSpace(strings.Split(c.GetHeader("X-Forwarded-Proto"), ",")[0]), "https") {
-		scheme = "https"
-	}
-
-	return scheme + "://" + host + "/ogp-thumbnail"
 }
