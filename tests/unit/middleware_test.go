@@ -36,6 +36,28 @@ func TestNewMaxBodyBytesMiddleware(t *testing.T) {
 	}
 }
 
+func TestIsXWebView(t *testing.T) {
+	tests := []struct {
+		name      string
+		userAgent string
+		want      bool
+	}{
+		{name: "X iOS", userAgent: "Mozilla/5.0 Twitter for iPhone/10.0", want: true},
+		{name: "X Android", userAgent: "Mozilla/5.0 XAndroid/10.66.0-release.0", want: true},
+		{name: "X web view", userAgent: "Mozilla/5.0 XWebView/1.0", want: true},
+		{name: "Safari", userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1", want: false},
+		{name: "Chrome web view", userAgent: "Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/AP2A) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36; wv", want: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := middleware.IsXWebView(test.userAgent); got != test.want {
+				t.Fatalf("IsXWebView(%q) = %v, want %v", test.userAgent, got, test.want)
+			}
+		})
+	}
+}
+
 func TestNewGlobalRateLimitMiddleware(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 

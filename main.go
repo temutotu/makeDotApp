@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"makeDotApp/common"
@@ -47,13 +46,18 @@ func main() {
 	store := memstore.NewStore([]byte(common.SessionKey))
 	r.Use(sessions.Sessions(common.SessionName, store))
 
-	templateFiles := append([]string{"templates/main.tmpl"}, partFiles...)
+	templateFiles := append([]string{"templates/main.tmpl", "templates/open-in-browser.tmpl"}, partFiles...)
 	tmpl := template.Must(template.ParseFiles(templateFiles...))
 	r.SetHTMLTemplate(tmpl)
 	r.Static("/static", "./static")
 	r.GET("/ogp-thumbnail", handler.OGPThumbnailHandler)
 
 	r.GET("/main", func(c *gin.Context) {
+		if middleware.IsXWebView(c.GetHeader("User-Agent")) {
+			c.HTML(http.StatusOK, "open-in-browser.tmpl", nil)
+			return
+		}
+
 		common.StartSession(c)
 
 		selectedDotSize := strconv.Itoa(common.GetSize(c))
@@ -114,7 +118,7 @@ func main() {
 			ColorCodeJSON: common.ToJSONJS(colorCode),
 			BlockInfoMap:  blockInfoMap,
 			BlockInfoJSON: blockInfoMapJSON,
-			OGPImageURL:   ogpThumbnailURL(c),
+			OGPImageURL:   common.OGPThumbnailURL(c),
 			Error:         nil,
 		})
 
@@ -145,14 +149,4 @@ func main() {
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		panic(err)
 	}
-}
-
-func ogpThumbnailURL(c *gin.Context) string {
-	host := strings.TrimSpace(c.Request.Host)
-	scheme := "http"
-	if c.Request.TLS != nil || strings.EqualFold(strings.TrimSpace(strings.Split(c.GetHeader("X-Forwarded-Proto"), ",")[0]), "https") {
-		scheme = "https"
-	}
-
-	return scheme + "://" + host + "/ogp-thumbnail"
 }
