@@ -1,6 +1,8 @@
 body {
   font-family: Arial, sans-serif;
   margin: 0;
+  width: 100%;
+  min-width: 1360px;
   min-height: 100svh;
   display: flex;
   align-items: flex-start;
@@ -10,8 +12,78 @@ body {
   color: #1f2937;
 }
 
+/* 修正後 */
+.browser-guide-body {
+  width: 100%; /* 横幅を画面いっぱいに確保 */
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column; /* 縦方向のFlexに変更 */
+  align-items: center;    /* 子要素を水平方向の中央に配置 */
+  justify-content: center;/* 垂直方向の中央に配置 */
+  min-height: 100vh;
+  min-height: 100dvh;     /* svhからdvhに変更して安定化 */
+  padding: 24px 16px;     /* スマホ画面用に左右パディングを確保 */
+  background: #eef4ff;
+}
+
+.browser-guide {
+  width: min(100%, 560px);
+  box-sizing: border-box;
+  padding: 36px 20px;     /* 小さな端末でも崩れないよう左右パディングを調整 */
+  border: 1px solid #dbe6ff;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+  text-align: center;
+  margin: 0 auto;         /* バックアップ用の中央寄せ */
+}
+
+.browser-guide-label {
+  margin: 0 0 12px;
+  color: #1d4ed8;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.browser-guide h1 {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 32px);
+}
+
+.browser-guide-message {
+  margin: 20px 0 0;
+  line-height: 1.8;
+}
+
+.browser-guide-button {
+  display: block;
+  margin-top: 28px;
+  padding: 14px 20px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.browser-guide-button:hover {
+  background: #1d4ed8;
+}
+
+.browser-guide-note {
+  margin: 18px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .layout {
-  width: min(100%, 1360px, calc((100svh - 48px) * 1.7));
+  width: 100%;
+  max-width: 1360px;
+  align-self: stretch;
+  margin: 0 auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -62,6 +134,7 @@ body {
   grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
   gap: 20px;
   align-items: stretch;
+  grid-auto-rows: minmax(0, 1fr);
 }
 
 .block-info-panel {
@@ -72,31 +145,6 @@ body {
 .preview-panel {
   display: flex;
   height: min(84svh, 980px);
-}
-
-@media (max-width: 720px) {
-  body {
-    padding: 12px 10px;
-  }
-
-  .layout {
-    width: 100%;
-    gap: 12px;
-  }
-
-  .panel {
-    padding: 16px;
-  }
-
-  .content-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
-  }
-
-  .block-info-panel,
-  .preview-panel {
-    height: min(70svh, 700px);
-  }
 }
 
 h1 {
@@ -381,50 +429,3 @@ button:hover {
   font-weight: 700;
 }
 
-@media (max-width: 900px) {
-  body {
-    align-items: flex-start;
-    padding: 16px 0;
-  }
-
-  .layout {
-    width: min(100%, 1360px);
-  }
-
-  .content-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-  }
-
-  .block-info-panel,
-  .preview-panel {
-    min-height: auto;
-    height: auto;
-    min-width: 0;
-  }
-
-  .output-canvas {
-    max-width: none;
-  }
-
-  .output-image-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .output-zoom-controls {
-    width: 100%;
-  }
-
-  .output-zoom-range {
-    flex: 1;
-    width: auto;
-  }
-
-  .block-info-list {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    max-height: none;
-    overflow-y: visible;
-    padding-right: 0;
-  }
-}
