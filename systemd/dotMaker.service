@@ -1,0 +1,19 @@
+[Unit]
+Description=Start Pokopia DotMaker
+After=network.target
+#StartLimitIntervalSec=300
+#StartLimitBurst=5
+
+After = deploy_dotMaker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/startDotMaker.sh
+WorkingDirectory=/usr/local/makeDotApp/release
+Restart=on-failure
+RestartSec=5
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target
