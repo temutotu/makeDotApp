@@ -1,0 +1,14 @@
+[Unit]
+Description=Deploy Pokopia DotMaker
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/deployDotMaker.sh
+WorkingDirectory=/home/ec2-user/
+Restart=no
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

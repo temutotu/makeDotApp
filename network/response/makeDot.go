@@ -15,6 +15,7 @@ type MakeDotIndex struct {
 	ColorCodeJSON template.JS
 	BlockInfoMap  *map[string]common.BlockInfo
 	BlockInfoJSON template.JS
+	OGPImageURL   string
 	Error         *Error
 }
 
@@ -23,6 +24,7 @@ type MakeDotIndexError struct {
 	PixelMapJSON  template.JS
 	ColorCodeJSON template.JS
 	BlockInfoJSON template.JS
+	OGPImageURL   string
 	Error         *Error
 }
 

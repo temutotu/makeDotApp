@@ -1,0 +1,21 @@
+{{ define "open-in-browser.tmpl" }}
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>外部ブラウザで開いてください | ぽこあポケモンドット絵メーカー</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="browser-guide-body">
+  <main class="browser-guide" aria-labelledby="browser-guide-title">
+    <p class="browser-guide-label">ぽこあポケモンドット絵メーカー</p>
+    <h1 id="browser-guide-title">外部ブラウザで開いてください</h1>
+    <p class="browser-guide-message">
+      XアプリのWebビューでは表示が崩れるため<br>
+      下リンクから外部ブラウザで開いてください。
+    </p>
+  </main>
+</body>
+</html>
+{{ end }}
