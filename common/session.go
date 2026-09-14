@@ -15,8 +15,8 @@ const (
 )
 
 type SessionData struct {
-	SelectedSize int
-	PixelMap     [][]int
+	SelectedSize uint16
+	PixelMap     [][]uint8
 	ColorCode    []string
 }
 
@@ -74,7 +74,7 @@ func GetSize(c *gin.Context) int {
 		return 32
 	}
 
-	return data.SelectedSize
+	return int(data.SelectedSize)
 }
 
 func SetSize(c *gin.Context, size int) {
@@ -83,7 +83,7 @@ func SetSize(c *gin.Context, size int) {
 		return
 	}
 
-	data.SelectedSize = size
+	data.SelectedSize = uint16(size)
 	session.Set(SessionKey, *data)
 	if err := session.Save(); err != nil {
 		log.Printf("failed to save session: %v", err)
@@ -100,7 +100,15 @@ func GetPixelMap(c *gin.Context) *[][]int {
 		return nil
 	}
 
-	return &data.PixelMap
+	pixelMap := make([][]int, len(data.PixelMap))
+	for rowIndex, row := range data.PixelMap {
+		pixelMap[rowIndex] = make([]int, len(row))
+		for columnIndex, value := range row {
+			pixelMap[rowIndex][columnIndex] = int(value)
+		}
+	}
+
+	return &pixelMap
 }
 
 func GetColorCode(c *gin.Context) *[]string {
@@ -123,7 +131,13 @@ func SetPixelMap(c *gin.Context, pixelMap *[][]int, colorCode *[]string) error {
 	}
 
 	if pixelMap != nil {
-		data.PixelMap = *pixelMap
+		data.PixelMap = make([][]uint8, len(*pixelMap))
+		for rowIndex, row := range *pixelMap {
+			data.PixelMap[rowIndex] = make([]uint8, len(row))
+			for columnIndex, value := range row {
+				data.PixelMap[rowIndex][columnIndex] = uint8(value)
+			}
+		}
 	}
 	if colorCode != nil {
 		data.ColorCode = *colorCode
