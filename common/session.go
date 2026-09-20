@@ -24,6 +24,25 @@ func SessionInit() {
 	gob.Register(&SessionData{})
 }
 
+func SetSessionData(c *gin.Context, data *SessionData) error {
+	session, _, err := getSessionData(c)
+	if err != nil {
+		return err
+	}
+
+	session.Options(sessions.Options{
+		MaxAge: 3600 * 2,
+	})
+
+	session.Set(SessionKey, *data)
+	if err := session.Save(); err != nil {
+		log.Printf("failed to save session in SetSessionData: %v", err)
+		return err
+	}
+
+	return nil
+}
+
 func getSessionData(c *gin.Context) (sessions.Session, *SessionData, error) {
 	if c == nil {
 		return nil, nil, errors.New("invalid gin context")
@@ -78,15 +97,14 @@ func GetSize(c *gin.Context) int {
 }
 
 func SetSize(c *gin.Context, size int) {
-	session, data, err := getSessionData(c)
+	_, data, err := getSessionData(c)
 	if err != nil {
 		return
 	}
 
 	data.SelectedSize = uint16(size)
-	session.Set(SessionKey, *data)
-	if err := session.Save(); err != nil {
-		log.Printf("failed to save session: %v", err)
+	if err := SetSessionData(c, data); err != nil {
+		log.Printf("failed to save session in SetSize: %v", err)
 	}
 }
 
@@ -125,7 +143,7 @@ func GetColorCode(c *gin.Context) *[]string {
 }
 
 func SetPixelMap(c *gin.Context, pixelMap *[][]int, colorCode *[]string) error {
-	session, data, err := getSessionData(c)
+	_, data, err := getSessionData(c)
 	if err != nil {
 		return err
 	}
@@ -142,8 +160,8 @@ func SetPixelMap(c *gin.Context, pixelMap *[][]int, colorCode *[]string) error {
 	if colorCode != nil {
 		data.ColorCode = *colorCode
 	}
-	session.Set(SessionKey, *data)
-	if err := session.Save(); err != nil {
+
+	if err := SetSessionData(c, data); err != nil {
 		pixelMapLen := len(data.PixelMap)
 		colorCodeLen := len(data.ColorCode)
 		log.Printf("failed to save session in SetPixelMap (pixelMapLen=%d colorCodeLen=%d): %v", pixelMapLen, colorCodeLen, err)
