@@ -50,11 +50,15 @@ func main() {
 	tmpl := template.Must(template.ParseFiles(templateFiles...))
 	r.SetHTMLTemplate(tmpl)
 	r.Static("/static", "./static")
+	// HEAD registered too: crawlers (X/Twitterbot) probe image URLs with HEAD before rendering the card.
 	r.GET("/ogp-thumbnail", handler.OGPThumbnailHandler)
+	r.HEAD("/ogp-thumbnail", handler.OGPThumbnailHandler)
 
-	r.GET("/main", func(c *gin.Context) {
+	mainHandler := func(c *gin.Context) {
 		if middleware.IsXWebView(c.GetHeader("User-Agent")) {
-			c.HTML(http.StatusOK, "open-in-browser.tmpl", nil)
+			c.HTML(http.StatusOK, "open-in-browser.tmpl", gin.H{
+				"OGPImageURL": common.OGPThumbnailURL(c),
+			})
 			return
 		}
 
@@ -122,7 +126,10 @@ func main() {
 			Error:         nil,
 		})
 
-	})
+	}
+	r.GET("/main", mainHandler)
+	// HEAD registered too: crawlers probe page URLs with HEAD before rendering the card.
+	r.HEAD("/main", mainHandler)
 
 	r.GET("/makeDot", func(c *gin.Context) {
 		c.Redirect(302, "/main")
