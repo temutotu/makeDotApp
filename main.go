@@ -28,7 +28,6 @@ type mainPageData struct {
 	ColorCodeJSON template.JS
 	BlockInfoMap  *map[string]common.BlockInfo
 	BlockInfoJSON template.JS
-	OGPImageURL   string
 	Error         *response.Error
 }
 
@@ -50,15 +49,10 @@ func main() {
 	tmpl := template.Must(template.ParseFiles(templateFiles...))
 	r.SetHTMLTemplate(tmpl)
 	r.Static("/static", "./static")
-	// HEAD registered too: crawlers (X/Twitterbot) probe image URLs with HEAD before rendering the card.
-	r.GET("/ogp-thumbnail", handler.OGPThumbnailHandler)
-	r.HEAD("/ogp-thumbnail", handler.OGPThumbnailHandler)
 
 	mainHandler := func(c *gin.Context) {
 		if middleware.IsXWebView(c.GetHeader("User-Agent")) {
-			c.HTML(http.StatusOK, "open-in-browser.tmpl", gin.H{
-				"OGPImageURL": common.OGPThumbnailURL(c),
-			})
+			c.HTML(http.StatusOK, "open-in-browser.tmpl", nil)
 			return
 		}
 
@@ -122,14 +116,11 @@ func main() {
 			ColorCodeJSON: common.ToJSONJS(colorCode),
 			BlockInfoMap:  blockInfoMap,
 			BlockInfoJSON: blockInfoMapJSON,
-			OGPImageURL:   common.OGPThumbnailURL(c),
 			Error:         nil,
 		})
 
 	}
 	r.GET("/main", mainHandler)
-	// HEAD registered too: crawlers probe page URLs with HEAD before rendering the card.
-	r.HEAD("/main", mainHandler)
 
 	r.GET("/makeDot", func(c *gin.Context) {
 		c.Redirect(302, "/main")
