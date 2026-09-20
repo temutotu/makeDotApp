@@ -28,7 +28,6 @@ type mainPageData struct {
 	ColorCodeJSON template.JS
 	BlockInfoMap  *map[string]common.BlockInfo
 	BlockInfoJSON template.JS
-	OGPImageURL   string
 	Error         *response.Error
 }
 
@@ -50,9 +49,8 @@ func main() {
 	tmpl := template.Must(template.ParseFiles(templateFiles...))
 	r.SetHTMLTemplate(tmpl)
 	r.Static("/static", "./static")
-	r.GET("/ogp-thumbnail", handler.OGPThumbnailHandler)
 
-	r.GET("/main", func(c *gin.Context) {
+	mainHandler := func(c *gin.Context) {
 		if middleware.IsXWebView(c.GetHeader("User-Agent")) {
 			c.HTML(http.StatusOK, "open-in-browser.tmpl", nil)
 			return
@@ -118,11 +116,11 @@ func main() {
 			ColorCodeJSON: common.ToJSONJS(colorCode),
 			BlockInfoMap:  blockInfoMap,
 			BlockInfoJSON: blockInfoMapJSON,
-			OGPImageURL:   common.OGPThumbnailURL(c),
 			Error:         nil,
 		})
 
-	})
+	}
+	r.GET("/main", mainHandler)
 
 	r.GET("/makeDot", func(c *gin.Context) {
 		c.Redirect(302, "/main")
